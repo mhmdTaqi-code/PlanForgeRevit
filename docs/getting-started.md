@@ -7,8 +7,8 @@ This guide takes you from a fresh clone to a working `search_revit_api` tool ins
 ## 1. Clone and install
 
 ```bash
-git clone https://github.com/<your-username>/TarkeebAI.git
-cd TarkeebAI
+git clone https://github.com/mhmdTaqi-code/PlanForgeRevit.git
+cd PlanForgeRevit
 python -m venv .venv
 # Windows:
 .venv\Scripts\activate

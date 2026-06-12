@@ -55,8 +55,8 @@ The shared contract between all layers is a single file: [`schema/plan_schema.js
 ## Quick start
 
 ```bash
-git clone https://github.com/<your-username>/TarkeebAI.git
-cd TarkeebAI
+git clone https://github.com/mhmdTaqi-code/PlanForgeRevit.git
+cd PlanForgeRevit
 pip install -r mcp-servers/plan-generator/requirements.txt
 
 # generate your first plan — no MCP client, no GPU, no API key:
