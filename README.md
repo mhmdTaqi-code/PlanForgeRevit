@@ -64,6 +64,7 @@ python mcp-servers/plan-generator/plan_generator_server.py --test "a house with 
 ```
 
 Then:
+- **[docs/models-and-data.md](docs/models-and-data.md)** — every model/database the pipeline needs: links, sizes, and exact local paths
 - **[docs/getting-started.md](docs/getting-started.md)** — set up the `revit-rag` server (database download, configuration)
 - **[docs/phase-1-pipeline.md](docs/phase-1-pipeline.md)** — the full text → plan → Revit walkthrough
 - **[docs/connect-mcp-clients.md](docs/connect-mcp-clients.md)** — hook both servers into Claude Code / Claude Desktop / Antigravity / any MCP agent
