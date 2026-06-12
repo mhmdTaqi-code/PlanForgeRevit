@@ -85,6 +85,11 @@ TarkeebAI/
 │       ├── revit_rag_server.py
 │       ├── config.example.json
 │       └── requirements.txt
+├── skills/
+│   └── bim-best-practices/   # Agent skill: Iraqi residential BIM standards in Revit
+│       ├── SKILL.md
+│       ├── scripts/          # idempotent pyRevit scripts (wall catalog, joins, validator)
+│       └── references/       # Iraqi construction standards reference
 ├── schema/
 │   └── plan_schema.json      # The unified plan format (backbone of the project)
 ├── examples/
@@ -92,10 +97,17 @@ TarkeebAI/
 ├── docs/
 │   ├── getting-started.md
 │   ├── phase-1-pipeline.md
-│   └── connect-mcp-clients.md
+│   ├── connect-mcp-clients.md
+│   └── models-and-data.md
 └── data/
     └── revit_db/             # ChromaDB database (downloaded separately, git-ignored)
 ```
+
+## Agent skills
+
+[`skills/bim-best-practices/`](skills/bim-best-practices/) packages Iraqi residential BIM expertise as a reusable agent skill: it creates the standard Iraqi multi-layer wall catalog (cement plaster → thermostone/brick → gypsum plaster), enforces column-to-wall joins, and validates wall thicknesses/naming against the standard set — all through the pyRevit MCP executor. It complements the pipeline: `generate_plan` invents the layout, the executor builds it, and this skill makes the result **constructionally correct**, not just geometrically present.
+
+To use it with Claude Code, copy the folder into your skills directory (or point your agent at [`SKILL.md`](skills/bim-best-practices/SKILL.md) directly).
 
 ## Roadmap
 

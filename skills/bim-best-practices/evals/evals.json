@@ -1,0 +1,45 @@
+{
+  "skill_name": "bim-best-practices",
+  "evals": [
+    {
+      "id": 0,
+      "name": "bare-walls-no-materials",
+      "prompt": "I opened my Iraqi house model in Revit and the walls look empty in section — they have no material and no plaster layers, just a single block of 'Structure'. Can you set up proper wall types and fix this?",
+      "expected_output": "Skill recognizes the bare single-layer / no-material defect, runs validate first to confirm, then creates the Iraqi multi-layer wall catalog (cement plaster -> thermostone/block core -> gypsum plaster) with real materials, and re-validates to PASS. Must NOT touch mohammad.rvt / Vilaa.0001.rvt if those are the active doc.",
+      "files": [],
+      "assertions": [
+        "Inspects the active document's wall types before changing anything (baseline)",
+        "Creates multi-layer wall types with at least 3 layers and assigned materials (plaster/core/plaster)",
+        "Wall type names follow the 'Iraqi ...' convention (e.g. 'Iraqi Exterior Wall - 25cm')",
+        "Refuses to write to mohammad.rvt or Vilaa.0001.rvt if either is the active reference document",
+        "Re-runs the wall-standard validator after the fix and reports PASS/FAIL"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "audit-wall-thicknesses",
+      "prompt": "Before I send this Revit model for documentation, can you audit the walls and tell me which ones don't meet the Iraqi standard thicknesses? Don't change anything yet, just flag problems.",
+      "expected_output": "Skill runs ONLY the read-only validate_wall_standards routine, names each offending used wall type, and flags non-standard thicknesses (not in {120,200,250,360}mm), bare walls, and cryptic names. Makes no model changes.",
+      "files": [],
+      "assertions": [
+        "Runs a read-only validation and makes no transaction / no model change",
+        "Names each non-conforming wall type with its thickness and instance count",
+        "Flags thicknesses outside the standard set {120,200,250,360} mm",
+        "Reports a clear PASS/FAIL summary"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "standardize-cryptic-types",
+      "prompt": "My villa model's wall types are named things like '25', '0.1', 'b' and '25 2' — total mess. I want them brought up to our Iraqi BIM standard with proper layers and clean names. Walk me through it.",
+      "expected_output": "Skill explains the workflow (validate -> create catalog -> remap -> join -> re-validate), creates the named multi-layer catalog, prints a thickness-based remap suggestion mapping old cryptic types to standard ones, and keeps wall reassignment as an explicit user-confirmed step.",
+      "files": [],
+      "assertions": [
+        "Explains the ordered workflow (baseline validate, create catalog, remap, joins, re-validate)",
+        "Creates the multi-layer named catalog with materials",
+        "Produces a remap suggestion mapping cryptic types to standard ones by thickness",
+        "Treats wall reassignment as an explicit step rather than silently re-typing walls"
+      ]
+    }
+  ]
+}
