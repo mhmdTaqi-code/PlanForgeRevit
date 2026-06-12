@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tarkeebai/schema/plan_schema.json",
+  "title": "TarkeebAI Plan Schema",
+  "description": "Unified floor-plan format exchanged between the plan generator, the orchestrating agent, and the Revit executor. All coordinates and dimensions are in METERS. The origin (0,0) is the bottom-left corner of the plot; X grows right (east), Y grows up (north).",
+  "type": "object",
+  "required": ["meta", "levels", "rooms", "walls"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["units"],
+      "properties": {
+        "name": { "type": "string", "description": "Human-readable plan name" },
+        "units": { "const": "meters" },
+        "plot": {
+          "type": "object",
+          "description": "Plot (land parcel) dimensions, e.g. the classic Iraqi 10x20",
+          "properties": {
+            "width_m": { "type": "number", "exclusiveMinimum": 0 },
+            "depth_m": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "description": { "type": "string", "description": "The original natural-language brief this plan was generated from" }
+      }
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "elevation_m"],
+        "properties": {
+          "id": { "type": "string", "description": "Unique level id, e.g. 'L0'" },
+          "name": { "type": "string", "description": "e.g. 'Ground Floor', 'First Floor', 'Roof'" },
+          "elevation_m": { "type": "number", "description": "Elevation above ±0.00" },
+          "height_m": { "type": "number", "exclusiveMinimum": 0, "description": "Floor-to-floor height" }
+        }
+      }
+    },
+    "rooms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "level", "polygon"],
+        "properties": {
+          "id": { "type": "string", "description": "Unique room id, e.g. 'R1'" },
+          "type": {
+            "type": "string",
+            "description": "Room function. Includes Iraqi/Gulf typology: 'majlis' (formal guest room), 'hosh' (courtyard), 'tarma' (covered porch), 'roof_terrace' (used roof).",
+            "enum": [
+              "bedroom", "master_bedroom", "living", "family_living", "majlis",
+              "kitchen", "dining", "bathroom", "wc", "corridor", "stair",
+              "hosh", "tarma", "garage", "store", "laundry", "roof_terrace",
+              "balcony", "garden", "other"
+            ]
+          },
+          "name": { "type": "string", "description": "Optional display name, e.g. 'Guest Majlis'" },
+          "level": { "type": "string", "description": "Id of the level this room belongs to" },
+          "polygon": {
+            "type": "array",
+            "minItems": 3,
+            "description": "Room boundary as an ordered list of [x, y] points in meters (counter-clockwise, not self-intersecting, first point NOT repeated at the end)",
+            "items": {
+              "type": "array",
+              "prefixItems": [{ "type": "number" }, { "type": "number" }],
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        }
+      }
+    },
+    "walls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "level", "start", "end", "thickness_m"],
+        "properties": {
+          "id": { "type": "string", "description": "Unique wall id, e.g. 'W1'" },
+          "level": { "type": "string", "description": "Id of the level this wall sits on" },
+          "start": {
+            "type": "array",
+            "description": "[x, y] of the wall centerline start, in meters",
+            "prefixItems": [{ "type": "number" }, { "type": "number" }],
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "end": {
+            "type": "array",
+            "description": "[x, y] of the wall centerline end, in meters",
+            "prefixItems": [{ "type": "number" }, { "type": "number" }],
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "thickness_m": { "type": "number", "exclusiveMinimum": 0, "description": "e.g. 0.24 exterior brick, 0.12 interior partition" },
+          "height_m": { "type": "number", "exclusiveMinimum": 0, "description": "Defaults to the level height if omitted" },
+          "kind": { "type": "string", "enum": ["exterior", "interior", "parapet", "fence"], "default": "interior" }
+        }
+      }
+    },
+    "doors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "wall", "offset_m", "width_m"],
+        "properties": {
+          "id": { "type": "string", "description": "Unique door id, e.g. 'D1'" },
+          "wall": { "type": "string", "description": "Id of the host wall" },
+          "offset_m": { "type": "number", "minimum": 0, "description": "Distance from the wall START point to the door centerline, along the wall" },
+          "width_m": { "type": "number", "exclusiveMinimum": 0, "description": "e.g. 1.0 entrance, 0.9 interior, 0.75 bathroom" },
+          "height_m": { "type": "number", "exclusiveMinimum": 0, "default": 2.1 },
+          "kind": { "type": "string", "enum": ["single", "double", "sliding", "garage", "gate"], "default": "single" }
+        }
+      }
+    },
+    "windows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "wall", "offset_m", "width_m"],
+        "properties": {
+          "id": { "type": "string", "description": "Unique window id, e.g. 'WN1'" },
+          "wall": { "type": "string", "description": "Id of the host wall" },
+          "offset_m": { "type": "number", "minimum": 0, "description": "Distance from the wall START point to the window centerline, along the wall" },
+          "width_m": { "type": "number", "exclusiveMinimum": 0 },
+          "height_m": { "type": "number", "exclusiveMinimum": 0, "default": 1.2 },
+          "sill_height_m": { "type": "number", "minimum": 0, "default": 0.9, "description": "Height of the window sill above the floor" }
+        }
+      }
+    }
+  }
+}

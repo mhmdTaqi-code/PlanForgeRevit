@@ -1,0 +1,5 @@
+{
+  "db_path": "",
+  "collection": "revit_api_2025_chunked",
+  "embedding_model": "Snowflake/snowflake-arctic-embed-l-v2.0"
+}

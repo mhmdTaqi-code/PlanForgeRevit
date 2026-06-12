@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "name": "Single-façade Iraqi house, 10x20 plot",
+    "units": "meters",
+    "plot": { "width_m": 10, "depth_m": 20 },
+    "description": "Ground floor of a typical Iraqi infill house: tarma (front porch), guest majlis next to the entrance, separated family zone, back hosh (courtyard), and a usable roof terrace."
+  },
+  "levels": [
+    { "id": "L0", "name": "Ground Floor", "elevation_m": 0.0, "height_m": 3.3 },
+    { "id": "L1", "name": "Roof", "elevation_m": 3.3, "height_m": 3.0 }
+  ],
+  "rooms": [
+    { "id": "R1", "type": "tarma",        "name": "Front Porch",   "level": "L0", "polygon": [[0, 0], [10, 0], [10, 2], [0, 2]] },
+    { "id": "R2", "type": "majlis",       "name": "Guest Majlis",  "level": "L0", "polygon": [[0, 2], [4, 2], [4, 9], [0, 9]] },
+    { "id": "R3", "type": "corridor",     "name": "Entrance Hall", "level": "L0", "polygon": [[4, 2], [6, 2], [6, 9], [4, 9]] },
+    { "id": "R4", "type": "bedroom",      "name": "Bedroom 1",     "level": "L0", "polygon": [[6, 2], [10, 2], [10, 9], [6, 9]] },
+    { "id": "R5", "type": "living",       "name": "Family Living", "level": "L0", "polygon": [[0, 9], [5, 9], [5, 16], [0, 16]] },
+    { "id": "R6", "type": "kitchen",      "name": "Kitchen",       "level": "L0", "polygon": [[5, 9], [10, 9], [10, 16], [5, 16]] },
+    { "id": "R7", "type": "hosh",         "name": "Courtyard",     "level": "L0", "polygon": [[0, 16], [10, 16], [10, 20], [0, 20]] },
+    { "id": "R8", "type": "roof_terrace", "name": "Roof Terrace",  "level": "L1", "polygon": [[0, 2], [10, 2], [10, 16], [0, 16]] }
+  ],
+  "walls": [
+    { "id": "W1",  "level": "L0", "start": [0, 2],    "end": [10, 2],  "thickness_m": 0.24, "height_m": 3.3, "kind": "exterior" },
+    { "id": "W2",  "level": "L0", "start": [10, 2],   "end": [10, 16], "thickness_m": 0.24, "height_m": 3.3, "kind": "exterior" },
+    { "id": "W3",  "level": "L0", "start": [10, 16],  "end": [0, 16],  "thickness_m": 0.24, "height_m": 3.3, "kind": "exterior" },
+    { "id": "W4",  "level": "L0", "start": [0, 16],   "end": [0, 2],   "thickness_m": 0.24, "height_m": 3.3, "kind": "exterior" },
+    { "id": "W5",  "level": "L0", "start": [4, 2],    "end": [4, 9],   "thickness_m": 0.12, "height_m": 3.3, "kind": "interior" },
+    { "id": "W6",  "level": "L0", "start": [6, 2],    "end": [6, 9],   "thickness_m": 0.12, "height_m": 3.3, "kind": "interior" },
+    { "id": "W7",  "level": "L0", "start": [0, 9],    "end": [10, 9],  "thickness_m": 0.12, "height_m": 3.3, "kind": "interior" },
+    { "id": "W8",  "level": "L0", "start": [5, 9],    "end": [5, 16],  "thickness_m": 0.12, "height_m": 3.3, "kind": "interior" },
+    { "id": "W9",  "level": "L0", "start": [0, 16],   "end": [0, 20],  "thickness_m": 0.24, "height_m": 2.4, "kind": "fence" },
+    { "id": "W10", "level": "L0", "start": [0, 20],   "end": [10, 20], "thickness_m": 0.24, "height_m": 2.4, "kind": "fence" },
+    { "id": "W11", "level": "L0", "start": [10, 20],  "end": [10, 16], "thickness_m": 0.24, "height_m": 2.4, "kind": "fence" }
+  ],
+  "doors": [
+    { "id": "D1", "wall": "W1", "offset_m": 5.0, "width_m": 1.0, "height_m": 2.2, "kind": "single" },
+    { "id": "D2", "wall": "W5", "offset_m": 1.0, "width_m": 0.9, "height_m": 2.1, "kind": "single" },
+    { "id": "D3", "wall": "W6", "offset_m": 1.5, "width_m": 0.9, "height_m": 2.1, "kind": "single" },
+    { "id": "D4", "wall": "W3", "offset_m": 7.5, "width_m": 0.9, "height_m": 2.1, "kind": "single" }
+  ],
+  "windows": [
+    { "id": "WN1", "wall": "W1", "offset_m": 2.0, "width_m": 1.5, "height_m": 1.4, "sill_height_m": 0.9 },
+    { "id": "WN2", "wall": "W1", "offset_m": 8.0, "width_m": 1.2, "height_m": 1.4, "sill_height_m": 0.9 },
+    { "id": "WN3", "wall": "W3", "offset_m": 2.5, "width_m": 1.0, "height_m": 1.0, "sill_height_m": 1.2 }
+  ]
+}

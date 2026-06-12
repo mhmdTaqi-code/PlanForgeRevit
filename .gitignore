@@ -1,0 +1,28 @@
+# ── Database files (download separately — see docs/getting-started.md) ──
+data/revit_db/*
+!data/revit_db/README.md
+
+# ── Local configuration (copy from config.example.json) ──
+mcp-servers/revit-rag/config.json
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ── Local models / caches ──
+models/
+.cache/
+
+# ── OS / editor ──
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
+
+# ── Working files (not part of the project) ──
+plan_extracted.txt
+revit_rag_server_v3_1.py
