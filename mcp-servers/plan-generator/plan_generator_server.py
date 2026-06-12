@@ -234,7 +234,7 @@ def _blocking_load():
     if _model is not None:
         return _model, _tokenizer
     import torch
-    from transformers import AutoTokenizer, AutoModelForCausalLM
+    from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM
 
     device = CONFIG["device"]
     if device == "auto":
@@ -243,7 +243,18 @@ def _blocking_load():
     print(f"PlanGen: loading model '{CONFIG['model']}' on {device}...",
           file=sys.stderr, flush=True)
     _tokenizer = AutoTokenizer.from_pretrained(CONFIG["model"])
-    _model = AutoModelForCausalLM.from_pretrained(CONFIG["model"]).to(device)
+
+    model_config = AutoConfig.from_pretrained(CONFIG["model"])
+    # The Architext checkpoint declares rotary_dim=64 (copied from GPT-J-6B)
+    # but its head dim is only 48. Old transformers sized the rotary table
+    # from the tensor, modern versions from the config — clamp to match.
+    head_dim = getattr(model_config, "n_embd", 0) // max(getattr(model_config, "n_head", 1), 1)
+    if getattr(model_config, "rotary_dim", None) and head_dim and model_config.rotary_dim > head_dim:
+        model_config.rotary_dim = head_dim
+
+    _model = AutoModelForCausalLM.from_pretrained(
+        CONFIG["model"], config=model_config
+    ).to(device)
     print("PlanGen: ready!", file=sys.stderr, flush=True)
     return _model, _tokenizer
 
