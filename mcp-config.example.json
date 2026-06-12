@@ -1,0 +1,13 @@
+{
+  "_comment": "Template for MCP clients that need absolute paths (Claude Desktop, Antigravity, Cursor, ...). Replace <REPO> with the absolute path of this repository, and use your venv's python. Windows example: C:\\\\Users\\\\you\\\\TarkeebAI",
+  "mcpServers": {
+    "revit-rag": {
+      "command": "<REPO>/.venv/Scripts/python.exe",
+      "args": ["<REPO>/mcp-servers/revit-rag/revit_rag_server.py"]
+    },
+    "plan-generator": {
+      "command": "<REPO>/.venv/Scripts/python.exe",
+      "args": ["<REPO>/mcp-servers/plan-generator/plan_generator_server.py"]
+    }
+  }
+}

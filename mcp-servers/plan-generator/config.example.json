@@ -1,0 +1,4 @@
+{
+  "model": "architext/gptj-162M",
+  "device": "auto"
+}

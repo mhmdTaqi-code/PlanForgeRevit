@@ -81,6 +81,8 @@ on stdin — that's normal; press `Ctrl+C` to stop.
 
 ## 5. Register the server in your MCP client
 
+Full per-client guide (Claude Code auto-detection via `.mcp.json`, Claude Desktop, Antigravity, Cursor): **[connect-mcp-clients.md](connect-mcp-clients.md)**.
+
 Use the **absolute paths** of your machine (these are the only machine-specific values in the whole setup):
 
 ### Claude Desktop / Antigravity (`claude_desktop_config.json` or equivalent)

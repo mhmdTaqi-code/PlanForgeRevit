@@ -44,10 +44,12 @@ flowchart LR
 
 The shared contract between all layers is a single file: [`schema/plan_schema.json`](schema/plan_schema.json).
 
-## What works today (v0.0 — Foundation)
+## What works today (v0.1 — first complete pipeline)
 
-- ✅ **`revit-rag` MCP server** — semantic search over the full Revit 2025 API documentation, fully local (ChromaDB + Snowflake Arctic embeddings, no paid API keys). See [`mcp-servers/revit-rag/`](mcp-servers/revit-rag/).
+- ✅ **`plan-generator` MCP server** — `generate_plan`: natural-language description → floor-plan JSON (Architext gptj-162M, runs locally on CPU), plus `validate_plan` for schema checking. See [docs/phase-1-pipeline.md](docs/phase-1-pipeline.md).
+- ✅ **`revit-rag` MCP server** — `search_revit_api`: semantic search over the full Revit 2025 API documentation, fully local (ChromaDB + Snowflake Arctic embeddings, no paid API keys).
 - ✅ **`plan_schema.json`** — the unified plan format (rooms, walls, doors, windows, levels) that every later phase builds on.
+- ✅ **Ready-made MCP configs** — [`.mcp.json`](.mcp.json) (picked up automatically by Claude Code) and [`mcp-config.example.json`](mcp-config.example.json) for Claude Desktop / Antigravity / Cursor. See [docs/connect-mcp-clients.md](docs/connect-mcp-clients.md).
 - ✅ Example plan in [`examples/`](examples/) showing the schema in practice.
 
 ## Quick start
@@ -55,18 +57,29 @@ The shared contract between all layers is a single file: [`schema/plan_schema.js
 ```bash
 git clone https://github.com/<your-username>/TarkeebAI.git
 cd TarkeebAI
-pip install -r mcp-servers/revit-rag/requirements.txt
-# download the prebuilt RAG database → see docs/getting-started.md
-python mcp-servers/revit-rag/revit_rag_server.py
+pip install -r mcp-servers/plan-generator/requirements.txt
+
+# generate your first plan — no MCP client, no GPU, no API key:
+python mcp-servers/plan-generator/plan_generator_server.py --test "a house with three bedrooms and two bathrooms"
 ```
 
-Full step-by-step setup (database download, MCP client registration, configuration): **[docs/getting-started.md](docs/getting-started.md)**.
+Then:
+- **[docs/getting-started.md](docs/getting-started.md)** — set up the `revit-rag` server (database download, configuration)
+- **[docs/phase-1-pipeline.md](docs/phase-1-pipeline.md)** — the full text → plan → Revit walkthrough
+- **[docs/connect-mcp-clients.md](docs/connect-mcp-clients.md)** — hook both servers into Claude Code / Claude Desktop / Antigravity / any MCP agent
 
 ## Repository structure
 
 ```
 TarkeebAI/
+├── .mcp.json                 # MCP config — auto-detected by Claude Code
+├── mcp-config.example.json   # MCP config template for other clients
 ├── mcp-servers/
+│   ├── plan-generator/       # MCP server: text → floor-plan JSON (Architext)
+│   │   ├── plan_generator_server.py
+│   │   ├── test_parser.py
+│   │   ├── config.example.json
+│   │   └── requirements.txt
 │   └── revit-rag/            # MCP server: Revit 2025 API semantic search
 │       ├── revit_rag_server.py
 │       ├── config.example.json
@@ -76,7 +89,9 @@ TarkeebAI/
 ├── examples/
 │   └── iraqi_house_10x20.json
 ├── docs/
-│   └── getting-started.md
+│   ├── getting-started.md
+│   ├── phase-1-pipeline.md
+│   └── connect-mcp-clients.md
 └── data/
     └── revit_db/             # ChromaDB database (downloaded separately, git-ignored)
 ```
@@ -86,13 +101,14 @@ TarkeebAI/
 | Phase | Goal | Deliverable |
 |---|---|---|
 | **0 — Foundation** ✅ | clean open-source repo | this repo |
-| **1 — First pipeline** | text → Revit with Architext (162M) | demo video, v0.1 |
+| **1 — First pipeline** ✅ | text → Revit with Architext (162M) | `generate_plan` tool, v0.1 |
 | **2 — Quality upgrade** | vector plans via HouseDiffusion | v0.2, before/after comparison |
 | **3 — Iraqi model** | 300–600 plan dataset + LoRA fine-tune (Qwen2.5-3B) | model + dataset on HuggingFace |
 | **4 — Packaging** | case study, outreach | PDF case study |
 
 ## Credits
 
+- Plan generation: [Architext](https://huggingface.co/architext/gptj-162M) by Theodoros Galanos et al. ([paper](https://arxiv.org/abs/2303.07519)).
 - The prebuilt Revit 2025 API RAG database comes from [RevitGeminiRAG](https://github.com/ismail-seleit/RevitGeminiRAG) by Ismail Seleit (MIT).
 - Embeddings: [Snowflake Arctic Embed L v2.0](https://huggingface.co/Snowflake/snowflake-arctic-embed-l-v2.0).
 

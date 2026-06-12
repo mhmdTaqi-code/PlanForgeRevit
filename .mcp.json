@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "revit-rag": {
+      "command": "python",
+      "args": ["mcp-servers/revit-rag/revit_rag_server.py"]
+    },
+    "plan-generator": {
+      "command": "python",
+      "args": ["mcp-servers/plan-generator/plan_generator_server.py"]
+    }
+  }
+}
