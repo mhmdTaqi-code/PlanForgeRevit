@@ -45,13 +45,29 @@ Same shape as the Claude Desktop snippet above — every stdio MCP client takes 
 
 | Tool | Server | Purpose |
 |---|---|---|
-| `generate_plan` | plan-generator | description → floor plan JSON (rooms, walls, meters) |
+| `generate_plan` | plan-generator | description → floor plan JSON (rooms, walls, meters) — Architext, CPU |
+| `plan_from_bubble_diagram` | plan-generator | bubble diagram (rooms + adjacencies) → floor plan JSON — HouseDiffusion, higher quality, GPU ([Phase 2](phase-2-housediffusion.md)) |
 | `validate_plan` | plan-generator | check any plan JSON against `schema/plan_schema.json` |
 | `search_revit_api` | revit-rag | semantic search over Revit 2025 API docs |
 
 ## The executor: pyRevit MCP extension
 
 The third layer (building inside Revit) is provided by a pyRevit-based MCP server installed as a pyRevit extension — for example [revit-mcp-server](https://github.com/Demolinator/revit-mcp-server) (Revit 2024–2027, 48 tools incl. `create_level`, `create_wall`, `create_room`). It talks to Revit through pyRevit's Routes API (`localhost:48884`) and registers in your MCP client like any other server. Any equivalent pyRevit MCP bridge works — TarkeebAI is executor-agnostic by design.
+
+**Installing the extension (the right way).** pyRevit does *not* watch a fixed `%APPDATA%\pyRevit\Extensions\` folder — that path is a common mistake. Instead, pyRevit loads extensions from directories you explicitly register, and an extension folder **must end in `.extension`**:
+
+```powershell
+# 1. clone/copy it as a *.extension folder anywhere convenient
+git clone https://github.com/Demolinator/revit-mcp-server.git "D:\pyrevit-ext\revit-mcp-server.extension"
+
+# 2. register the PARENT directory (the one that contains the .extension folder)
+pyrevit extensions paths add "D:\pyrevit-ext"
+
+# 3. reload pyRevit (CLI or the pyRevit tab → Reload button in Revit)
+pyrevit reload
+```
+
+Alternatively, do step 2 from Revit: **pyRevit tab → Settings → Custom Extension Directories → add `D:\pyrevit-ext` → Save Settings and Reload**. Confirm with `pyrevit extensions paths` — your directory should be listed. Then start Revit with a document open; the Routes API serves on `localhost:48884`.
 
 > ⚠️ **Units:** TarkeebAI plans are in **meters**; revit-mcp-server tools take **millimeters**. The orchestration prompt below handles the ×1000 conversion.
 

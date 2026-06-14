@@ -63,7 +63,10 @@ See [connect-mcp-clients.md](connect-mcp-clients.md). Short version: Claude Code
 
 ## Step 5 — The full chain into Revit
 
-1. Install a pyRevit MCP extension as the executor — e.g. [revit-mcp-server](https://github.com/Demolinator/revit-mcp-server): copy it into `%APPDATA%\pyRevit\Extensions\`, start Revit (pyRevit Routes API serves on `localhost:48884`), and register its MCP server in your client alongside the two TarkeebAI servers.
+1. Install a pyRevit MCP extension as the executor — e.g. [revit-mcp-server](https://github.com/Demolinator/revit-mcp-server). pyRevit does **not** auto-load a fixed `%APPDATA%` folder; instead you register the extension's directory with pyRevit:
+   - Clone/copy the extension anywhere you like — the folder name **must end in `.extension`** (e.g. `D:\pyrevit-ext\revit-mcp-server.extension`).
+   - Register the directory that *contains* it: `pyrevit extensions paths add "D:\pyrevit-ext"` (or pyRevit tab → Settings → *Custom Extension Directories* → add the folder), then **Reload** pyRevit.
+   - Start Revit with a document open (pyRevit Routes API serves on `localhost:48884`), and register its MCP server in your client alongside the two TarkeebAI servers.
 2. Give your agent the orchestration prompt from [connect-mcp-clients.md](connect-mcp-clients.md#recommended-orchestration-prompt) — note it converts the plan's meters to the millimeters the Revit tools expect.
 3. The agent: generates → validates → builds the levels and walls, consulting `search_revit_api` whenever the Revit API behavior is unclear.
 

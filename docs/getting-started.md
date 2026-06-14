@@ -15,7 +15,8 @@ python -m venv .venv
 # Linux/macOS:
 source .venv/bin/activate
 
-pip install -r mcp-servers/revit-rag/requirements.txt
+# everything for both servers in one command:
+pip install -r requirements.txt
 ```
 
 ## 2. Download the RAG database

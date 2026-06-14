@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tarkeebai/schema/bubble_diagram_schema.json",
+  "title": "TarkeebAI Bubble Diagram Schema",
+  "description": "The conditioning input for the HouseDiffusion plan generator (Phase 2). A bubble diagram is a graph: rooms are NODES, and an 'adjacency' is an EDGE meaning the two rooms share a wall / are connected by a door. HouseDiffusion does NOT read natural language or images — the orchestrating LLM translates the user's brief into this graph, then HouseDiffusion turns the graph into room polygons. This is the contract between Layer 2 (orchestrator) and the HouseDiffusion engine.",
+  "type": "object",
+  "required": ["rooms", "adjacencies"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string", "description": "The original natural-language brief" },
+        "plot": {
+          "type": "object",
+          "description": "Plot size in meters. The model generates a normalized unit layout; the bridge scales it to fit this plot. Defaults to 10x20 (classic Iraqi plot) if omitted.",
+          "properties": {
+            "width_m": { "type": "number", "exclusiveMinimum": 0 },
+            "depth_m": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        }
+      }
+    },
+    "rooms": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": { "type": "string", "description": "Unique room id used to reference this room in 'adjacencies', e.g. 'r1'" },
+          "type": {
+            "type": "string",
+            "description": "TarkeebAI room type (same vocabulary as plan_schema.json). It is mapped to the nearest RPLAN class the model was trained on.",
+            "enum": [
+              "bedroom", "master_bedroom", "living", "family_living", "majlis",
+              "kitchen", "dining", "bathroom", "wc", "corridor", "stair",
+              "hosh", "tarma", "garage", "store", "laundry", "roof_terrace",
+              "balcony", "garden", "other"
+            ]
+          },
+          "corners": {
+            "type": "integer",
+            "minimum": 3,
+            "maximum": 16,
+            "description": "How many corners the room polygon should have. 4 = rectangle (default). Use 6 for an L-shaped room. The model generates the coordinates; this only fixes the corner count."
+          }
+        }
+      }
+    },
+    "adjacencies": {
+      "type": "array",
+      "description": "Undirected edges. Each edge [a, b] means rooms a and b are adjacent / connected by a door. Rooms not listed in any edge are auto-connected to the main living room by the bridge (HouseDiffusion's own fallback).",
+      "items": {
+        "type": "array",
+        "prefixItems": [{ "type": "string" }, { "type": "string" }],
+        "minItems": 2,
+        "maxItems": 2
+      }
+    }
+  }
+}

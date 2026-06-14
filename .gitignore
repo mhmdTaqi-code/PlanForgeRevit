@@ -16,6 +16,14 @@ venv/
 models/
 .cache/
 
+# ── HouseDiffusion runtime artifacts (Phase 2 — downloaded/generated, not source) ──
+*.pt
+AIProjects/house_diffusion/datasets/
+AIProjects/house_diffusion/processed_rplan/
+AIProjects/house_diffusion/scripts/ckpts/
+AIProjects/house_diffusion/scripts/outputs/
+AIProjects/**/outputs/
+
 # ── OS / editor ──
 .DS_Store
 Thumbs.db
@@ -25,6 +33,7 @@ Thumbs.db
 
 # ── Working files (not part of the project) ──
 plan_extracted.txt
+_plan_extract.txt
 revit_rag_server_v3_1.py
 شرح_التأسيس_بالعربي.md
 *.docx

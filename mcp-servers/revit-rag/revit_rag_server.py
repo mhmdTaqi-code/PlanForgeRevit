@@ -112,12 +112,26 @@ def _blocking_load():
 def _blocking_query(query: str, n: int):
     """Embed the query and search the database (runs in a worker thread)."""
     col, model = _blocking_load()
-    embedding = model.encode([query]).tolist()
+    # Arctic-embed (and other asymmetric models) need their query prompt for
+    # good retrieval; documents in the DB are embedded without it.
+    if "query" in (getattr(model, "prompts", None) or {}):
+        embedding = model.encode([query], prompt_name="query").tolist()
+    else:
+        embedding = model.encode([query]).tolist()
     return col.query(
         query_embeddings=embedding,
         n_results=n,
         include=["documents", "metadatas", "distances"],
     )
+
+
+def _relevance(dist: float) -> float:
+    """Convert a Chroma distance to a 0-100 relevance score.
+
+    The prebuilt collection uses squared-L2 over normalized embeddings,
+    where dist = 2 * (1 - cosine_similarity).
+    """
+    return round(max(0.0, min(1.0, 1.0 - dist / 2.0)) * 100, 1)
 
 
 @server.list_tools()
@@ -181,7 +195,7 @@ async def call_tool(name: str, arguments: dict):
             # api_element_name/element_type, the public release has filename/chunk_num.
             api = meta.get("api_element_name") or meta.get("filename") or "—"
             kind = meta.get("element_type") or f"chunk {meta.get('chunk_num', '—')}"
-            rel = round((1 - dist) * 100, 1)
+            rel = _relevance(dist)
             parts.append(
                 f"{'━'*50}\n"
                 f"Result {i+1} | {api} | {kind} | relevance: {rel}%\n"

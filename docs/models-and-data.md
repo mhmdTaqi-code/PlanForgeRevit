@@ -57,7 +57,7 @@ To relocate the cache (e.g. small system drive), set the `HF_HOME` environment v
 | Component | Purpose | Source |
 |---|---|---|
 | **pyRevit** | Revit scripting runtime | [github.com/pyrevitlabs/pyRevit](https://github.com/pyrevitlabs/pyRevit) |
-| **revit-mcp-server** (pyRevit extension) | MCP tools inside Revit (`create_wall`, `create_level`, ... — takes millimeters) | [github.com/Demolinator/revit-mcp-server](https://github.com/Demolinator/revit-mcp-server) → `%APPDATA%\pyRevit\Extensions\` |
+| **revit-mcp-server** (pyRevit extension) | MCP tools inside Revit (`create_wall`, `create_level`, ... — takes millimeters) | [github.com/Demolinator/revit-mcp-server](https://github.com/Demolinator/revit-mcp-server) — clone anywhere as a `*.extension` folder, then register it with `pyrevit extensions paths add "<parent-dir>"` (see [connect-mcp-clients.md](connect-mcp-clients.md#the-executor-pyrevit-mcp-extension)) |
 
 ## Coming in later phases (not needed yet)
 

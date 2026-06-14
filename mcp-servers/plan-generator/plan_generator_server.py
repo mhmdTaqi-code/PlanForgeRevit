@@ -330,6 +330,41 @@ async def list_tools():
             }
         ),
         Tool(
+            name="plan_from_bubble_diagram",
+            description=(
+                "Generate a floor plan with HouseDiffusion (Phase 2, higher "
+                "quality than generate_plan) from a BUBBLE DIAGRAM, not from "
+                "text. HouseDiffusion does not read language — so YOU (the "
+                "agent) first translate the user's brief into a graph: a list "
+                "of rooms (each with an 'id' and a 'type' from the plan schema "
+                "vocabulary, optionally 'corners') and a list of 'adjacencies' "
+                "(pairs of room ids that share a wall / a door). See "
+                "schema/bubble_diagram_schema.json. Returns the same plan JSON "
+                "as generate_plan. If the HouseDiffusion model is not installed "
+                "locally (it needs a GPU + checkpoint), this returns the "
+                "validated diagram plus instructions to run it on Colab. "
+                "Example diagram: {\"meta\":{\"plot\":{\"width_m\":10,"
+                "\"depth_m\":20}},\"rooms\":[{\"id\":\"maj\",\"type\":"
+                "\"majlis\"},{\"id\":\"liv\",\"type\":\"living\"}],"
+                "\"adjacencies\":[[\"maj\",\"liv\"]]}."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "diagram": {
+                        "type": "string",
+                        "description": "The bubble diagram as a JSON string (bubble_diagram_schema.json)"
+                    },
+                    "num_samples": {
+                        "type": "integer",
+                        "description": "How many variations to sample; the first is returned (default 1)",
+                        "default": 1
+                    }
+                },
+                "required": ["diagram"]
+            }
+        ),
+        Tool(
             name="validate_plan",
             description=(
                 "Validate floor-plan JSON against the TarkeebAI plan schema. "
@@ -364,6 +399,44 @@ async def call_tool(name: str, arguments: dict):
                 None, _blocking_generate, description, creativity
             )
             return [TextContent(type="text", text=json.dumps(plan, indent=2))]
+
+        if name == "plan_from_bubble_diagram":
+            try:
+                diagram = json.loads(arguments.get("diagram", ""))
+            except json.JSONDecodeError as exc:
+                return [TextContent(type="text", text=f"Invalid diagram JSON: {exc}")]
+            num_samples = int(arguments.get("num_samples", 1) or 1)
+
+            from housediffusion import graph_to_model_input as g2m
+            from housediffusion import engine as hd_engine
+
+            # Validate the graph first — clear errors are better than a model crash.
+            try:
+                g2m.normalize_diagram(diagram)
+            except ValueError as exc:
+                return [TextContent(type="text", text=f"Invalid bubble diagram: {exc}")]
+
+            status = hd_engine.availability()
+            if not status["ready"]:
+                msg = (
+                    "The bubble diagram is valid, but the HouseDiffusion model "
+                    "is not runnable here:\n- "
+                    + "\n- ".join(status["missing"])
+                    + "\n\nRun it on a GPU with notebooks/HouseDiffusion_TarkeebAI.ipynb "
+                    "(Colab/Kaggle), or set HOUSE_DIFFUSION_CKPT to a local "
+                    "checkpoint. Meanwhile you can use generate_plan (Architext) "
+                    "for a CPU-only plan.\n\nValidated diagram:\n"
+                    + json.dumps(diagram, ensure_ascii=False, indent=2)
+                )
+                return [TextContent(type="text", text=msg)]
+
+            loop = asyncio.get_event_loop()
+            plan = await loop.run_in_executor(
+                None, hd_engine.generate_from_diagram, diagram, num_samples
+            )
+            errors = validate_plan(plan)
+            footer = "" if not errors else "\n\n(WARNING: schema issues: " + "; ".join(errors) + ")"
+            return [TextContent(type="text", text=json.dumps(plan, indent=2) + footer)]
 
         if name == "validate_plan":
             try:
