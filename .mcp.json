@@ -6,7 +6,10 @@
     },
     "plan-generator": {
       "command": "python",
-      "args": ["mcp-servers/plan-generator/plan_generator_server.py"]
+      "args": ["mcp-servers/plan-generator/plan_generator_server.py"],
+      "env": {
+        "HOUSE_DIFFUSION_CKPT": "AIProjects/house_diffusion/scripts/ckpts/model.pt"
+      }
     }
   }
 }

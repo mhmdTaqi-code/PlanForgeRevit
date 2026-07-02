@@ -159,5 +159,13 @@ def build_model_kwargs(diagram: dict, batch_size: int = 1):
         "graph": graph,
     }
     model_kwargs = {k: np.repeat(v[None], batch_size, 0) for k, v in single.items()}
+    # HouseDiffusion's sampler runs the transformer in synthesis mode
+    # (is_syn=True), which reads every conditioning tensor under a "syn_" prefix
+    # (see transformer.forward). We are generating from scratch (no ground-truth
+    # house to compare against), so the syn_ inputs ARE our conditioning —
+    # duplicate every key under that prefix. The un-prefixed keys are kept for
+    # model_output_to_plan, which reads room_types / room_indices / padding.
+    for key in list(model_kwargs.keys()):
+        model_kwargs["syn_" + key] = model_kwargs[key]
     data_shape = (batch_size, nc2, max_pts)
     return data_shape, model_kwargs, norm
