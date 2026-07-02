@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # The offline self-checks only need the light deps — no torch,
+      # no model downloads, so CI stays fast and free.
+      - name: Install test dependencies
+        run: pip install "mcp>=1.0.0" "jsonschema>=4.20.0" numpy
+
+      - name: Architext parser self-check
+        run: python mcp-servers/plan-generator/test_parser.py
+
+      - name: HouseDiffusion bridge self-check
+        run: python mcp-servers/plan-generator/housediffusion/test_bridge.py
+
+      - name: MCP servers import cleanly
+        run: |
+          python -c "import sys; sys.path.insert(0, 'mcp-servers/plan-generator'); import plan_generator_server"
+          python -c "import ast; ast.parse(open('mcp-servers/revit-rag/revit_rag_server.py').read())"
+
+      - name: Schemas and examples are valid JSON
+        run: |
+          python - <<'EOF'
+          import json, jsonschema, pathlib
+          for p in pathlib.Path('.').glob('schema/*.json'):
+              jsonschema.Draft202012Validator.check_schema(json.load(open(p, encoding='utf-8')))
+              print(f"schema OK: {p}")
+          schema = json.load(open('schema/plan_schema.json', encoding='utf-8'))
+          for p in pathlib.Path('examples').glob('*.json'):
+              jsonschema.validate(json.load(open(p, encoding='utf-8')), schema)
+              print(f"example OK: {p}")
+          EOF

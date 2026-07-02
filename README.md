@@ -1,5 +1,9 @@
 # TarkeebAI
 
+[![CI](https://github.com/mhmdTaqi-code/PlanForgeRevit/actions/workflows/ci.yml/badge.svg)](https://github.com/mhmdTaqi-code/PlanForgeRevit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+
 **Text → Plan → BIM.** An open-source pipeline that turns a natural-language description of a house into real Revit geometry — walls, doors, windows, and levels — orchestrated by any MCP-capable AI agent (Claude, Antigravity, or others).
 
 > 🏗️ Long-term goal: train and publish the **first floor-plan generation model specialized in Iraqi & Gulf residential typology** (guest/family separation, hosh courtyards, tarma porches, single-façade 10×20 plots) — a niche no existing dataset or model covers.
