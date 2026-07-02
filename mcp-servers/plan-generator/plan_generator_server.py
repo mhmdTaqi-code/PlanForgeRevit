@@ -68,7 +68,9 @@ NUM_WORDS = {
     "10": "ten", "11": "eleven", "12": "twelve",
 }
 
-ROOM_RE = re.compile(r"([a-z_]+)\s*:\s*((?:\([^)]*\))+)")
+# Architext numbers repeated rooms ("bedroom1: ..., bedroom2: ..."), so the
+# label may carry a trailing index — capture it and strip it before mapping.
+ROOM_RE = re.compile(r"([a-z_]+?)\d*\s*:\s*((?:\([^)]*\))+)")
 POINT_RE = re.compile(r"\(([^)]*)\)")
 
 

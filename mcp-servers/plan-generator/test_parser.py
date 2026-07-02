@@ -14,13 +14,14 @@ from plan_generator_server import (
     ARCHITEXT_UNITS_PER_METER,
 )
 
-# A realistic raw output in the exact format the official Architext demo parses:
-# rooms separated by ", ", each "label: (x,y)(x,y)..."
+# A realistic raw output in the exact format the model actually emits:
+# rooms separated by ", ", each "label: (x,y)(x,y)..." — repeated room types
+# carry a trailing index (bedroom1, bedroom2), which the parser must strip.
 SAMPLE = (
     "living_room: (44,38)(44,81)(87,81)(87,38), "
     "kitchen: (87,38)(87,60)(109,60)(109,38), "
-    "bedroom: (109,38)(109,81)(152,81)(152,38), "
-    "bedroom: (44,81)(44,124)(87,124)(87,81), "
+    "bedroom1: (109,38)(109,81)(152,81)(152,38), "
+    "bedroom2: (44,81)(44,124)(87,124)(87,81), "
     "bathroom: (87,60)(87,81)(109,81)(109,60), "
     "corridor: (87,81)(87,124)(152,124)(152,81)"
 )
