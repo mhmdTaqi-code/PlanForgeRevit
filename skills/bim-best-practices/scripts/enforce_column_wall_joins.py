@@ -31,8 +31,14 @@ joined_cw = 0
 joined_ww = 0
 open_corners = []
 
+# Some MCP executors (e.g. mcp-server-for-revit-python) already wrap the code
+# in a transaction; starting our own then throws. Open one only if we can.
 t = DB.Transaction(doc, "Enforce Iraqi column/wall joins")
-t.Start()
+try:
+    t.Start()
+    own_txn = True
+except:
+    own_txn = False
 
 # ---- (1) column <-> wall joins (only if columns exist) -------------------------
 if cols:
@@ -94,7 +100,8 @@ for i in range(len(ends)):
     if not meets:
         open_corners.append(wi.Id.IntegerValue)
 
-t.Commit()
+if own_txn:
+    t.Commit()
 
 print("\n--- result ---")
 print("  column<->wall joins made : {0}".format(joined_cw))

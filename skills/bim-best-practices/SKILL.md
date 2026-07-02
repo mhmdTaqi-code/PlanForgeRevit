@@ -119,6 +119,10 @@ parapet heights).
 These bite every time, so internalize them:
 
 - **No f-strings.** Use `"{0} {1}".format(a, b)` with explicit positional indices.
+- **Transactions differ per executor.** Some MCP bridges leave transactions to you; others
+  (e.g. `mcp-server-for-revit-python`) already wrap your code in one, and starting your own
+  throws. The scripts handle both: they `try` to start a transaction and skip commit if the
+  executor owns it. Keep that pattern in any new script.
 - Revit internal units are **feet**, always. Convert mm → ft with `mm / 304.8`. Areas are
   ft²; multiply by 0.092903 for m². The document's *display* units being meters does not
   change the API units.

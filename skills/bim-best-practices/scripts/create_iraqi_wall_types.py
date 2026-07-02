@@ -118,15 +118,22 @@ template = find_basic_walltype()
 if template is None:
     print("[ABORT] No Basic wall type found to use as a template.")
 else:
+    # Some MCP executors (e.g. mcp-server-for-revit-python) already wrap the code
+    # in a transaction; starting our own then throws. Open one only if we can.
     t = DB.Transaction(doc, "Create Iraqi standard wall catalog")
-    t.Start()
+    try:
+        t.Start()
+        own_txn = True
+    except:
+        own_txn = False
     made = []
     for name, spec in CATALOG:
         wt = get_or_duplicate_walltype(name, template)
         wt.SetCompoundStructure(build_compound(spec))
         total = sum(w for _, w, _ in spec)
         made.append((name, total, "{0}mm".format(int(round(wt.Width * MM)))))
-    t.Commit()
+    if own_txn:
+        t.Commit()
     print("=== Iraqi wall catalog ready in '{0}' ===".format(doc.Title))
     for name, want, got in made:
         flag = "ok" if abs(want - int(got[:-2])) <= 1 else "CHECK"
