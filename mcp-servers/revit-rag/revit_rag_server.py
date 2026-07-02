@@ -211,9 +211,12 @@ async def call_tool(name: str, arguments: dict):
 async def main():
     validate_db_layout(Path(CONFIG["db_path"]))
 
-    # Pre-warm model and DB in the background while the server starts.
+    # Pre-warm the model and DB only AFTER the MCP handshake has settled.
+    # Importing torch/sentence-transformers is seconds of GIL-bound work that
+    # starves the event loop — starting it immediately makes clients sit in
+    # "connecting" until the import finishes.
     loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, _blocking_load)
+    loop.call_later(3.0, lambda: loop.run_in_executor(None, _blocking_load))
 
     async with stdio_server() as (read_stream, write_stream):
         await server.run(
