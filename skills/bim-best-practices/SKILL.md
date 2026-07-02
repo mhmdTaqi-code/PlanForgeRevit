@@ -107,6 +107,34 @@ storefront systems (they legitimately have no compound structure) and only judge
 6. Re-run `scripts/validate_wall_standards.py` until it returns `PASS`. That green result is
    the definition of "done".
 
+## Layout & furnishing sanity rules (learned from live reviews)
+
+A model can pass the wall validator and still be *architecturally* wrong. Check these
+BEFORE building furniture, and again visually (export a plan image) after:
+
+1. **Circulation — the entrance never opens onto private bedrooms.** The Iraqi pattern is
+   entrance → reception (majlis for guests, living for family) → a hall/corridor → private
+   rooms. If a generated layout puts two bedrooms directly off the entry space, repurpose:
+   the room nearest the entrance becomes the **majlis** (guest room — sofas, no bed), and
+   move the displaced bedroom deeper into the plan. Guest/family separation is the defining
+   requirement of Iraqi residential layouts.
+2. **Bathroom size 3–6 m².** Generators love dumping leftover area into the bathroom. A
+   bathroom over ~6 m² is a design error, not a luxury: convert the oversized room into a
+   bedroom/store and carve a real 3–4 m² bathroom off the hall with a 12 cm partition
+   (`Iraqi Interior Partition - 12cm`). A leftover circulation strip makes a good hall +
+   small-bath pair.
+3. **Bed orientation — headboard flat against a solid wall.** Never floating, never head
+   under a window, and not blocking a door swing. Family origins are NOT consistent:
+   `Bed-Standard` renders its pillows at the origin end, so a bed that "looks fine" by
+   coordinates can be 180° backwards in plan. **Always export the plan image and look at
+   which end the pillows are on**; if reversed, rotate the instance 180° about its own
+   center. The same one-visual-check rule applies to toilets/vanities (back to the wall)
+   and kitchen appliances (backs to the wall, fronts into the room).
+4. **Furniture must sit inside its room.** Rotation about the placement point moves the
+   body — after any placement pass, run a bounding-box containment check per room interior
+   and clamp offenders back inside (move by the bbox overshoot). Then export the plan image
+   and *look at it* — the clamp fixes geometry, only eyes catch nonsense.
+
 ## Domain reference
 
 For the full Iraqi construction stack-ups (walls, roofing system, levels/heights, structural

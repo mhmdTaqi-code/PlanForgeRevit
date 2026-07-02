@@ -17,7 +17,7 @@ Run the full chain without asking for permission between steps:
 1. **Generate** — call `generate_plan` with an English description (translate the user's Arabic brief yourself; spell out digit counts as words happens server-side).
    - For higher quality, or when the user gives explicit room adjacencies, build a bubble diagram (`schema/bubble_diagram_schema.json`) and call `plan_from_bubble_diagram` instead. If the HouseDiffusion checkpoint isn't available it tells you and you fall back to `generate_plan`.
 2. **Validate** — call `validate_plan` on the result. On failure, regenerate (max 3 tries).
-3. **Sanity-check** — rooms shouldn't overlap; areas should be plausible for the brief. Prefer a clearly better regeneration.
+3. **Sanity-check** — rooms shouldn't overlap; areas should be plausible for the brief. Prefer a clearly better regeneration. Then check the LAYOUT like an architect: the entrance must not open directly onto bedrooms (room nearest the entrance = majlis/guest room); bathrooms belong at 3–6 m² (an oversized bathroom = repurpose it and carve a small one off a hall); every bedroom needs a solid wall for the bed head. Full rules: `skills/bim-best-practices/SKILL.md` → "Layout & furnishing sanity rules".
 4. **Build in Revit** — requires Revit running with a Revit MCP executor connected (check its status tool first, e.g. `get_revit_status`).
    - ⚠️ **Units: the plan is in METERS; Revit MCP tools take MILLIMETERS — multiply every coordinate by 1000.**
    - Create level(s) from `plan.levels` (elevation_m, height_m).
