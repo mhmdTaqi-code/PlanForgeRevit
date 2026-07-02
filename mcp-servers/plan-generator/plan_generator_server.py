@@ -133,36 +133,99 @@ def to_meters(rooms: list[dict]) -> list[dict]:
     return result
 
 
-def derive_walls(rooms: list[dict], level: str = "L0") -> list[dict]:
-    """Turn room polygon edges into wall centerlines.
+def _point_in_polygon(x: float, y: float, poly: list) -> bool:
+    """Standard ray-casting point-in-polygon test."""
+    inside = False
+    n = len(poly)
+    for i in range(n):
+        x1, y1 = poly[i]
+        x2, y2 = poly[(i + 1) % n]
+        if (y1 > y) != (y2 > y):
+            t = (y - y1) / (y2 - y1)
+            if x < x1 + t * (x2 - x1):
+                inside = not inside
+    return inside
 
-    An edge shared by exactly two rooms becomes one interior wall; an edge
-    that belongs to a single room becomes an exterior wall. Partially
-    overlapping (non-identical) edges are kept as-is — good enough for the
-    v0.1 proof of concept.
+
+def derive_walls(rooms: list[dict], level: str = "L0") -> list[dict]:
+    """Turn room polygon edges into non-overlapping wall centerlines.
+
+    Room edges frequently overlap only partially (one room's edge covers a
+    stretch of a neighbour's longer edge), so naive per-edge emission
+    produces stacked duplicate walls. Instead, axis-aligned edges are
+    projected onto their carrying line, split at every endpoint into atomic
+    intervals, and each interval is classified by probing which rooms sit on
+    either side: rooms on both sides -> interior, one side -> exterior.
+    Consecutive intervals with the same kind merge into one maximal wall.
+    Non-axis-aligned edges (rare) are kept as-is and classified exterior.
     """
-    edge_count: dict[tuple, int] = {}
-    for room in rooms:
-        poly = room["polygon"]
+    EPS = 0.005  # probe offset (m); well below any plausible wall thickness
+    polys = [r["polygon"] for r in rooms]
+    v_lines: dict[float, list] = {}   # x -> [(y1, y2), ...]
+    h_lines: dict[float, list] = {}   # y -> [(x1, x2), ...]
+    slanted = []
+
+    for poly in polys:
         for i in range(len(poly)):
-            p1, p2 = tuple(poly[i]), tuple(poly[(i + 1) % len(poly)])
-            if p1 == p2:
+            (x1, y1), (x2, y2) = poly[i], poly[(i + 1) % len(poly)]
+            if (x1, y1) == (x2, y2):
                 continue
-            key = tuple(sorted([p1, p2]))
-            edge_count[key] = edge_count.get(key, 0) + 1
+            if x1 == x2:
+                v_lines.setdefault(x1, []).append((min(y1, y2), max(y1, y2)))
+            elif y1 == y2:
+                h_lines.setdefault(y1, []).append((min(x1, x2), max(x1, x2)))
+            else:
+                slanted.append(((x1, y1), (x2, y2)))
+
+    def sweep(lines: dict, vertical: bool):
+        """Yield (start, end, kind) maximal segments for one axis."""
+        for c, intervals in sorted(lines.items()):
+            cuts = sorted({p for iv in intervals for p in iv})
+            run = None  # [a, b, kind]
+            for a, b in zip(cuts, cuts[1:]):
+                if not any(iv[0] <= a and b <= iv[1] for iv in intervals):
+                    if run:
+                        yield run
+                        run = None
+                    continue
+                m = (a + b) / 2.0
+                probes = ((c - EPS, m), (c + EPS, m)) if vertical else ((m, c - EPS), (m, c + EPS))
+                sides = sum(
+                    1 for px, py in probes
+                    if any(_point_in_polygon(px, py, poly) for poly in polys)
+                )
+                kind = "interior" if sides == 2 else "exterior"
+                if run and run[2] == kind and run[1] == a:
+                    run[1] = b
+                else:
+                    if run:
+                        yield run
+                    run = [a, b, kind]
+            if run:
+                yield run
 
     walls = []
-    for i, ((p1, p2), count) in enumerate(sorted(edge_count.items()), start=1):
-        kind = "interior" if count > 1 else "exterior"
+
+    def emit(start, end, kind):
         walls.append({
-            "id": f"W{i}",
+            "id": f"W{len(walls) + 1}",
             "level": level,
-            "start": list(p1),
-            "end": list(p2),
+            "start": [round(start[0], 3), round(start[1], 3)],
+            "end": [round(end[0], 3), round(end[1], 3)],
             "thickness_m": 0.12 if kind == "interior" else 0.24,
             "height_m": 3.0,
             "kind": kind,
         })
+
+    for x, intervals in sorted(v_lines.items()):
+        for a, b, kind in sweep({x: intervals}, vertical=True):
+            emit((x, a), (x, b), kind)
+    for y, intervals in sorted(h_lines.items()):
+        for a, b, kind in sweep({y: intervals}, vertical=False):
+            emit((a, y), (b, y), kind)
+    for p1, p2 in slanted:
+        emit(p1, p2, "exterior")
+
     return walls
 
 
