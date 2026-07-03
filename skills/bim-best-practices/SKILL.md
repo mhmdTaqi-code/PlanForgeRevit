@@ -154,6 +154,11 @@ BEFORE building furniture, and again visually (export a plan image) after:
    `Location.Curve` edits with `WallUtils.DisallowWallJoinAtEnd(wall, 0/1)` first and
    re-allow after — otherwise Revit DRAGS every joined wall along and silently corrupts
    other junctions (verified live: restoring one wall un-did another's alignment).
+   **Better yet, don't mix thicknesses on one line at all**: 25 cm is ONLY for the plot
+   perimeter (street/neighbour walls carrying the Sitara). Everything inside — room-to-room
+   AND room-to-hosh partitions — is 12 cm. When a heavy segment continues a partition run,
+   convert it and make ONE straight 12 cm wall on one centreline instead of two collinear
+   walls (delete + extend, checking hosted doors/windows first; ChangeTypeId keeps hosts).
 10. **Keep door approaches clear.** No furniture inside a door's swing arc plus ~600 mm of
    passage beyond it — a TV stand beside the entry door means nobody can walk in. Check
    every door after the furnishing pass, on the exported image.
