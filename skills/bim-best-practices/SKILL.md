@@ -150,15 +150,16 @@ BEFORE building furniture, and again visually (export a plan image) after:
 
 ## Presentation style (الإظهار) — the project standard
 
-Taken from the user's reference model (`eval_scratch.rvt`, read-only). Verified by
-extraction: the reference carries **no view templates and no per-category overrides** — its
-look is view settings plus the wall types' own cut patterns. To reproduce it reliably on ANY
-model (whatever its wall types), apply the settings AND force the poché with
-**Override Graphics by Category**:
+Taken from the user's reference model (`eval_scratch.rvt`) and confirmed against its live
+document. The reference carries **no view templates and no category overrides** — the look
+is **type/material-driven** (user-approved: dark grey poché, not pure black; floors read
+visibly coloured):
 
-| View kind | Settings |
+| Element | The system |
 |---|---|
-| Floor plans | **Coarse + Hidden Line + 1:100**; category override: Walls/Columns **cut = 〈Solid fill〉 black**; hide Elevations markers, Topography, Mass |
+| Floor plans (view) | **Coarse + Hidden Line + 1:100**; hide Elevations markers, Topography, Mass |
+| Wall poché | wall TYPE's **Coarse Scale Fill Pattern = 〈Solid fill〉, Coarse Scale Fill Color = RGB (74,74,74)** dark grey |
+| Floors | slab material **surface foreground pattern = 〈Solid fill〉, light grey ≈ (228,228,224)**; courtyard paving keeps its tile hatch |
 | 3D / perspectives | Medium + **ShadingWithEdges** |
 | Elevations & sections | Coarse + Hidden Line |
 
@@ -168,17 +169,25 @@ plan.DisplayStyle = DB.DisplayStyle.HLR        # enum is HLR / ShadingWithEdges
 plan.Scale = 100
 solid = next(fp for fp in DB.FilteredElementCollector(doc).OfClass(DB.FillPatternElement)
              if fp.GetFillPattern().IsSolidFill and str(fp.GetFillPattern().Target) == "Drafting")
-for bic in (DB.BuiltInCategory.OST_Walls, DB.BuiltInCategory.OST_Columns,
-            DB.BuiltInCategory.OST_StructuralColumns):
-    cid = DB.ElementId(bic)
-    ogs = plan.GetCategoryOverrides(cid)
-    ogs.SetCutForegroundPatternId(solid.Id)
-    ogs.SetCutForegroundPatternColor(DB.Color(0, 0, 0))
-    plan.SetCategoryOverrides(cid, ogs)
+GREY = 74 + 74*256 + 74*65536          # color params store BGR-packed ints
+for wt in DB.FilteredElementCollector(doc).OfClass(DB.WallType):
+    if str(getattr(wt, "Kind", "")) != "Basic":
+        continue
+    for p in wt.Parameters:            # find by NAME; the BuiltInParameter enum differs per build
+        if p.Definition.Name == "Coarse Scale Fill Pattern" and not p.IsReadOnly:
+            p.Set(solid.Id)
+        elif p.Definition.Name == "Coarse Scale Fill Color" and not p.IsReadOnly:
+            p.Set(GREY)
+# floors: set the slab material's SurfaceForegroundPatternId = solid, color (228,228,224)
 for bic in (DB.BuiltInCategory.OST_Elev, DB.BuiltInCategory.OST_Topography,
             DB.BuiltInCategory.OST_Mass):
     plan.SetCategoryHidden(DB.ElementId(bic), True)
 ```
+
+Do NOT force black category overrides on Walls — they sit on top of the type fills and
+turn the grey poché black. If a reference model is open as the ACTIVE document, read it
+directly (no OpenDocumentFile needed) and write to the target model found via
+`doc.Application.Documents`, opening your own transaction on that document.
 
 ⚠️ **Never `OpenDocumentFile` a second model through the MCP bridge** — it kills the
 Routes thread (connection dies or Revit crashes). To read anything from a reference
