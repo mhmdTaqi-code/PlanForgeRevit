@@ -134,6 +134,34 @@ BEFORE building furniture, and again visually (export a plan image) after:
    body — after any placement pass, run a bounding-box containment check per room interior
    and clamp offenders back inside (move by the bbox overshoot). Then export the plan image
    and *look at it* — the clamp fixes geometry, only eyes catch nonsense.
+5. **Openings never face the neighbours.** Iraqi plots share party walls: doors and windows
+   go ONLY on the street-facing facade(s) — a corner plot gets the front plus its corner
+   side — and on walls that open onto the house's own hosh. Every other perimeter wall is
+   blind. Before placing openings, decide which plot edge is the street (the hosh gate side)
+   and audit every opening against it.
+6. **Entry sequence is street → hosh gate → hosh → house door.** Never a house door
+   directly on the street line: the visitor enters the courtyard first, then the house
+   (majlis reachable from the hosh so guests don't cross the family zone).
+7. **Every bathroom needs a ventilation window** — small, high sill (~1800 mm), opening
+   onto the house's own courtyard or a shaft, never toward a neighbour.
+8. **No dead leftover strips.** If the generated footprint leaves a sliver of plot that is
+   too narrow to be a usable hosh (≲1.5 m deep), absorb it into the adjacent room by moving
+   that room's exterior wall to the plot edge — don't fence and pave a useless corridor.
+
+## Presentation style (الإظهار) — the project standard
+
+Taken from the user's reference model (`eval_scratch.rvt`, read-only). Its views use no
+view templates — the style is three per-view settings, so apply them directly:
+
+| View kind | Detail level | Display style |
+|---|---|---|
+| Floor plans | **Coarse** | **Hidden Line** (walls read as solid black poché) |
+| 3D / perspectives | Medium | **ShadingWithEdges** (presentation) |
+| Elevations & sections | Coarse | Hidden Line |
+
+In code: `view.DetailLevel = DB.ViewDetailLevel.Coarse; view.DisplayStyle = DB.DisplayStyle.HLR`
+(the enum member is `HLR`, and the shaded one is `ShadingWithEdges` — not "ShadedWithEdges").
+Apply this to every new plan/3D/elevation before exporting deliverables.
 
 ## Domain reference
 
