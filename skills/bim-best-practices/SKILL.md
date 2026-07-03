@@ -150,18 +150,41 @@ BEFORE building furniture, and again visually (export a plan image) after:
 
 ## Presentation style (الإظهار) — the project standard
 
-Taken from the user's reference model (`eval_scratch.rvt`, read-only). Its views use no
-view templates — the style is three per-view settings, so apply them directly:
+Taken from the user's reference model (`eval_scratch.rvt`, read-only). Verified by
+extraction: the reference carries **no view templates and no per-category overrides** — its
+look is view settings plus the wall types' own cut patterns. To reproduce it reliably on ANY
+model (whatever its wall types), apply the settings AND force the poché with
+**Override Graphics by Category**:
 
-| View kind | Detail level | Display style |
-|---|---|---|
-| Floor plans | **Coarse** | **Hidden Line** (walls read as solid black poché) |
-| 3D / perspectives | Medium | **ShadingWithEdges** (presentation) |
-| Elevations & sections | Coarse | Hidden Line |
+| View kind | Settings |
+|---|---|
+| Floor plans | **Coarse + Hidden Line + 1:100**; category override: Walls/Columns **cut = 〈Solid fill〉 black**; hide Elevations markers, Topography, Mass |
+| 3D / perspectives | Medium + **ShadingWithEdges** |
+| Elevations & sections | Coarse + Hidden Line |
 
-In code: `view.DetailLevel = DB.ViewDetailLevel.Coarse; view.DisplayStyle = DB.DisplayStyle.HLR`
-(the enum member is `HLR`, and the shaded one is `ShadingWithEdges` — not "ShadedWithEdges").
-Apply this to every new plan/3D/elevation before exporting deliverables.
+```python
+plan.DetailLevel = DB.ViewDetailLevel.Coarse
+plan.DisplayStyle = DB.DisplayStyle.HLR        # enum is HLR / ShadingWithEdges
+plan.Scale = 100
+solid = next(fp for fp in DB.FilteredElementCollector(doc).OfClass(DB.FillPatternElement)
+             if fp.GetFillPattern().IsSolidFill and str(fp.GetFillPattern().Target) == "Drafting")
+for bic in (DB.BuiltInCategory.OST_Walls, DB.BuiltInCategory.OST_Columns,
+            DB.BuiltInCategory.OST_StructuralColumns):
+    cid = DB.ElementId(bic)
+    ogs = plan.GetCategoryOverrides(cid)
+    ogs.SetCutForegroundPatternId(solid.Id)
+    ogs.SetCutForegroundPatternColor(DB.Color(0, 0, 0))
+    plan.SetCategoryOverrides(cid, ogs)
+for bic in (DB.BuiltInCategory.OST_Elev, DB.BuiltInCategory.OST_Topography,
+            DB.BuiltInCategory.OST_Mass):
+    plan.SetCategoryHidden(DB.ElementId(bic), True)
+```
+
+⚠️ **Never `OpenDocumentFile` a second model through the MCP bridge** — it kills the
+Routes thread (connection dies or Revit crashes). To read anything from a reference
+model, run a separate headless session: `pyrevit run extract.py "<model.rvt>" --revit=2025`
+and dump what you need to JSON (in that context get the doc from `__models__` /
+`__revit__`, not `revit.doc`).
 
 ## Domain reference
 
