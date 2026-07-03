@@ -159,7 +159,7 @@ visibly coloured):
 |---|---|
 | Floor plans (view) | **Coarse + Hidden Line + 1:100**; hide Elevations markers, Topography, Mass |
 | Wall poché | wall TYPE's **Coarse Scale Fill Pattern = 〈Solid fill〉, Coarse Scale Fill Color = RGB (74,74,74)** dark grey |
-| Floors | slab material **surface foreground pattern = 〈Solid fill〉, light grey ≈ (228,228,224)**; courtyard paving keeps its tile hatch |
+| Floors | slab material **surface foreground pattern = 〈Solid fill〉, light grey ≈ (228,228,224)** + view category override **Floors surface transparency = 60%** so the fill reads light, never heavy; courtyard paving keeps its tile hatch |
 | 3D / perspectives | Medium + **ShadingWithEdges** |
 | Elevations & sections | Coarse + Hidden Line |
 
@@ -178,7 +178,12 @@ for wt in DB.FilteredElementCollector(doc).OfClass(DB.WallType):
             p.Set(solid.Id)
         elif p.Definition.Name == "Coarse Scale Fill Color" and not p.IsReadOnly:
             p.Set(GREY)
-# floors: set the slab material's SurfaceForegroundPatternId = solid, color (228,228,224)
+# floors: set the slab material's SurfaceForegroundPatternId = solid, color (228,228,224),
+# then soften it with view transparency so it never reads heavy:
+fid = DB.ElementId(DB.BuiltInCategory.OST_Floors)
+fogs = plan.GetCategoryOverrides(fid)
+fogs.SetSurfaceTransparency(60)
+plan.SetCategoryOverrides(fid, fogs)
 for bic in (DB.BuiltInCategory.OST_Elev, DB.BuiltInCategory.OST_Topography,
             DB.BuiltInCategory.OST_Mass):
     plan.SetCategoryHidden(DB.ElementId(bic), True)
