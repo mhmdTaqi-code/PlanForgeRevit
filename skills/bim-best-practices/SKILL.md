@@ -147,6 +147,20 @@ BEFORE building furniture, and again visually (export a plan image) after:
 8. **No dead leftover strips.** If the generated footprint leaves a sliver of plot that is
    too narrow to be a usable hosh (≲1.5 m deep), absorb it into the adjacent room by moving
    that room's exterior wall to the plot edge — don't fence and pave a useless corridor.
+9. **Align partition faces with thick-wall faces.** A 12 cm partition centred on the same
+   line as a 25 cm wall leaves a 6.5 cm step on both faces at every junction. Offset the
+   partition's centreline by (25−12)/2 = 65 mm so ONE face runs flush with the thick wall's
+   face (pick the side that reads as a continuous wall in the room). In the API, wrap
+   `Location.Curve` edits with `WallUtils.DisallowWallJoinAtEnd(wall, 0/1)` first and
+   re-allow after — otherwise Revit DRAGS every joined wall along and silently corrupts
+   other junctions (verified live: restoring one wall un-did another's alignment).
+10. **Keep door approaches clear.** No furniture inside a door's swing arc plus ~600 mm of
+   passage beyond it — a TV stand beside the entry door means nobody can walk in. Check
+   every door after the furnishing pass, on the exported image.
+11. **Deletions and edits need a dump-verify.** After deleting/moving walls, re-list every
+   wall's endpoints+height and compare against the intended state — a delete that matched
+   the wrong element, or a join-drag, hides for several exports before a reviewer catches
+   it (it happened: an "already deleted" wall + its window survived two review rounds).
 
 ## Presentation style (الإظهار) — the project standard
 
